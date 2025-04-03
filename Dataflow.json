@@ -1,0 +1,78 @@
+{
+    "name": "Dataflow",
+    "properties": {
+        "type": "MappingDataFlow",
+        "typeProperties": {
+            "sources": [
+                {
+                    "dataset": {
+                        "referenceName": "Parquet3",
+                        "type": "DatasetReference"
+                    },
+                    "name": "source1"
+                }
+            ],
+            "sinks": [
+                {
+                    "dataset": {
+                        "referenceName": "AzureSynapseAnalyticsTable3",
+                        "type": "DatasetReference"
+                    },
+                    "name": "sink1"
+                }
+            ],
+            "transformations": [
+                {
+                    "name": "alterRow1"
+                }
+            ],
+            "scriptLines": [
+                "source(output(",
+                "          Account_ID as integer,",
+                "          Account_Type as string,",
+                "          Customer_ID as integer,",
+                "          First_Name as string,",
+                "          Last_Name as string,",
+                "          Address as string,",
+                "          City as string,",
+                "          State as string,",
+                "          Zip as string,",
+                "          Balance as integer,",
+                "          Total_Balance as long",
+                "     ),",
+                "     allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     ignoreNoFilesFound: false,",
+                "     format: 'parquet',",
+                "     partitionBy('hash', 1)) ~> source1",
+                "source1 alterRow(upsertIf(true())) ~> alterRow1",
+                "alterRow1 sink(allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     input(",
+                "          Account_ID as integer,",
+                "          account_type as string,",
+                "          customer_id as integer,",
+                "          first_name as string,",
+                "          last_name as string,",
+                "          address as string,",
+                "          city as string,",
+                "          state as string,",
+                "          zip as string,",
+                "          balance as integer,",
+                "          total_balance as long",
+                "     ),",
+                "     deletable:false,",
+                "     insertable:false,",
+                "     updateable:false,",
+                "     upsertable:true,",
+                "     keys:['Customer_ID'],",
+                "     format: 'table',",
+                "     staged: true,",
+                "     allowCopyCommand: true,",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true,",
+                "     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+            ]
+        }
+    }
+}
